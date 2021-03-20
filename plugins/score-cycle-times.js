@@ -32,7 +32,7 @@ scoreCycleTimes.update = function () {
   var checkpointStart = Math.floor(now / (window.plugin.scoreCycleTimes.CHECKPOINT*1000)) * (window.plugin.scoreCycleTimes.CHECKPOINT*1000);
   var checkpointEnd = checkpointStart + window.plugin.scoreCycleTimes.CHECKPOINT*1000;
 
-  var o = new Intl.DateTimeFormat(scoreCycleTimes.localeTime, scoreCycleTimes.dateTimeFormat);
+  var o = new Intl.DateTimeFormat(scoreCycleTimes.locale, scoreCycleTimes.dateTimeFormat);
 
   function formatRow (label, time) {
     var dateTime = o.format(new Date(time));
