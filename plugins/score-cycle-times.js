@@ -6,26 +6,18 @@
 
 
 // use own namespace for plugin
-window.plugin.scoreCycleTimes = function() {};
+var scoreCycleTimes = {};
+window.plugin.scoreCycleTimes = scoreCycleTimes;
 
-window.plugin.scoreCycleTimes.CHECKPOINT = 5*60*60; //5 hours per checkpoint
-window.plugin.scoreCycleTimes.CYCLE = 7*25*60*60; //7 25 hour 'days' per cycle
-
-
-window.plugin.scoreCycleTimes.setup  = function() {
-
-  // add a div to the sidebar, and basic style
-  $('#sidebar').append('<div id="score_cycle_times_display"></div>');
-  $('#score_cycle_times_display').css({'color':'#ffce00'});
-
-
-  window.plugin.scoreCycleTimes.update();
+scoreCycleTimes.CHECKPOINT = 5*60*60; // 5 hours per checkpoint
+scoreCycleTimes.CYCLE = 7*25*60*60;   // 7 25 hour 'days' per cycle
+scoreCycleTimes.locale = navigator.languages;
+scoreCycleTimes.dateTimeFormat = {
+  year: 'numeric', month: '2-digit', day: '2-digit',
+  hour: '2-digit', minute: '2-digit'
 };
 
-
-
-window.plugin.scoreCycleTimes.update = function() {
-
+scoreCycleTimes.update = function () {
   // checkpoint and cycle start times are based on a simple modulus of the timestamp
   // no special epoch (other than the unix timestamp/javascript's 1970-01-01 00:00 UTC) is required
 
@@ -40,25 +32,28 @@ window.plugin.scoreCycleTimes.update = function() {
   var checkpointStart = Math.floor(now / (window.plugin.scoreCycleTimes.CHECKPOINT*1000)) * (window.plugin.scoreCycleTimes.CHECKPOINT*1000);
   var checkpointEnd = checkpointStart + window.plugin.scoreCycleTimes.CHECKPOINT*1000;
 
+  var o = new Intl.DateTimeFormat(scoreCycleTimes.localeTime, scoreCycleTimes.dateTimeFormat);
 
-  var formatRow = function(label,time) {
-    var timeStr = unixTimeToString(time,true);
-    timeStr = timeStr.replace(/:00$/,''); //FIXME: doesn't remove seconds from AM/PM formatted dates
-
-    return '<tr><td>'+label+'</td><td>'+timeStr+'</td></tr>';
-  };
+  function formatRow (label, time) {
+    var dateTime = o.format(new Date(time));
+    return '<tr><td>'+label+'</td><td>'+dateTime+'</td></tr>';
+  }
 
   var html = '<table>'
-           + formatRow('Cycle start', cycleStart)
-           + formatRow('Previous checkpoint', checkpointStart)
-           + formatRow('Next checkpoint', checkpointEnd)
-           + formatRow('Cycle end', cycleEnd)
-           + '</table>';
+    + formatRow('Cycle start', cycleStart)
+    + formatRow('Previous checkpoint', checkpointStart)
+    + formatRow('Next checkpoint', checkpointEnd)
+    + formatRow('Cycle end', cycleEnd)
+    + '</table>';
 
   $('#score_cycle_times_display').html(html);
 
-  setTimeout ( window.plugin.scoreCycleTimes.update, checkpointEnd-now);
+  setTimeout(scoreCycleTimes.update, checkpointEnd-now);
 };
 
+function setup () {
+  $('#sidebar').append('<div id="score_cycle_times_display"></div>');
+  $('#score_cycle_times_display').css({color: '#ffce00'});
 
-var setup =  window.plugin.scoreCycleTimes.setup;
+  scoreCycleTimes.update();
+}
